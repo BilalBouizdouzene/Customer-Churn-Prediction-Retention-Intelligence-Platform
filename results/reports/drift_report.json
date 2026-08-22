@@ -1,0 +1,157 @@
+{
+  "features": [
+    {
+      "feature": "gender",
+      "kind": "categorical",
+      "distribution_distance": 0.006147966789993298
+    },
+    {
+      "feature": "SeniorCitizen",
+      "kind": "numeric",
+      "psi": 0.0,
+      "ks_p_value": 0.9999999999993457
+    },
+    {
+      "feature": "Partner",
+      "kind": "categorical",
+      "distribution_distance": 0.004249772174650696
+    },
+    {
+      "feature": "Dependents",
+      "kind": "categorical",
+      "distribution_distance": 0.00837590972656757
+    },
+    {
+      "feature": "tenure",
+      "kind": "numeric",
+      "psi": 0.013549954549039797,
+      "ks_p_value": 0.7476164159905037
+    },
+    {
+      "feature": "PhoneService",
+      "kind": "categorical",
+      "distribution_distance": 0.014479193351279424
+    },
+    {
+      "feature": "MultipleLines",
+      "kind": "categorical",
+      "distribution_distance": 0.023431784680897516
+    },
+    {
+      "feature": "InternetService",
+      "kind": "categorical",
+      "distribution_distance": 0.006522398276506469
+    },
+    {
+      "feature": "OnlineSecurity",
+      "kind": "categorical",
+      "distribution_distance": 0.006522398276506497
+    },
+    {
+      "feature": "OnlineBackup",
+      "kind": "categorical",
+      "distribution_distance": 0.03139412315587453
+    },
+    {
+      "feature": "DeviceProtection",
+      "kind": "categorical",
+      "distribution_distance": 0.007496524876008409
+    },
+    {
+      "feature": "TechSupport",
+      "kind": "categorical",
+      "distribution_distance": 0.011967025167876816
+    },
+    {
+      "feature": "StreamingTV",
+      "kind": "categorical",
+      "distribution_distance": 0.02881140260623799
+    },
+    {
+      "feature": "StreamingMovies",
+      "kind": "categorical",
+      "distribution_distance": 0.013905535421067428
+    },
+    {
+      "feature": "Contract",
+      "kind": "categorical",
+      "distribution_distance": 0.008183234574019094
+    },
+    {
+      "feature": "PaperlessBilling",
+      "kind": "categorical",
+      "distribution_distance": 0.0012289550270660476
+    },
+    {
+      "feature": "PaymentMethod",
+      "kind": "categorical",
+      "distribution_distance": 0.006837532179018224
+    },
+    {
+      "feature": "MonthlyCharges",
+      "kind": "numeric",
+      "psi": 0.015050567323066054,
+      "ks_p_value": 0.42916990320129805
+    },
+    {
+      "feature": "TotalCharges",
+      "kind": "numeric",
+      "psi": 0.009356235503406595,
+      "ks_p_value": 0.31877323680562325
+    },
+    {
+      "feature": "tenure_bucket",
+      "kind": "categorical",
+      "distribution_distance": 0.00944847367514836
+    },
+    {
+      "feature": "services_count",
+      "kind": "numeric",
+      "psi": 0.005435202801283475,
+      "ks_p_value": 0.6607810820919198
+    },
+    {
+      "feature": "support_services_count",
+      "kind": "numeric",
+      "psi": 0.004109675534725512,
+      "ks_p_value": 0.4073743022019888
+    },
+    {
+      "feature": "has_security_bundle",
+      "kind": "numeric",
+      "psi": 0.0,
+      "ks_p_value": 1.0
+    },
+    {
+      "feature": "long_term_contract",
+      "kind": "numeric",
+      "psi": 0.0,
+      "ks_p_value": 1.0
+    },
+    {
+      "feature": "auto_payment",
+      "kind": "numeric",
+      "psi": 0.0,
+      "ks_p_value": 1.0
+    },
+    {
+      "feature": "avg_monthly_value",
+      "kind": "numeric",
+      "psi": 0.006653369026275323,
+      "ks_p_value": 0.7316501543596792
+    },
+    {
+      "feature": "charge_per_tenure",
+      "kind": "numeric",
+      "psi": 0.0023546007952784864,
+      "ks_p_value": 0.5142529398504329
+    },
+    {
+      "feature": "monthly_to_total_ratio",
+      "kind": "numeric",
+      "psi": 0.008976087269763112,
+      "ks_p_value": 0.8050920117669671
+    }
+  ],
+  "retraining_recommended": false
+}

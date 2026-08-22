@@ -1,0 +1,7 @@
+raw_path: data/raw/Telco-Customer-Churn.csv
+target: Churn
+id_column: customerID
+random_state: 42
+test_size: 0.20
+validation_size: 0.20
+

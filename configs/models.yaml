@@ -1,0 +1,27 @@
+selected_model: xgboost
+calibration_method: sigmoid
+random_state: 42
+models:
+  logistic:
+    max_iter: 1000
+    class_weight: null
+  logistic_balanced:
+    max_iter: 1000
+    class_weight: balanced
+  random_forest:
+    n_estimators: 240
+    max_depth: 8
+    min_samples_leaf: 3
+    class_weight: balanced
+    n_jobs: 2
+  xgboost:
+    n_estimators: 220
+    max_depth: 3
+    learning_rate: 0.04
+    subsample: 0.85
+    colsample_bytree: 0.85
+    min_child_weight: 2
+    reg_alpha: 0.05
+    reg_lambda: 1.0
+    n_jobs: 2
+

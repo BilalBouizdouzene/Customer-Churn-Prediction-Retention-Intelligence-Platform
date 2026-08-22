@@ -1,0 +1,11 @@
+customer_value: 1200.0
+retention_offer_cost: 80.0
+contact_cost: 5.0
+churn_loss: 1200.0
+retention_success_rate: 0.25
+team_capacity: 900
+risk_thresholds:
+  low: 0.25
+  medium: 0.50
+  high: 0.75
+

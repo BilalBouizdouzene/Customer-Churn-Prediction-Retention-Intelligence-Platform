@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Customer Retention Intelligence Center</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#overview"><span class="brand-mark">C</span><span>Retention<br><b>Intelligence</b></span></a>
+    <nav class="main-nav" aria-label="Navigation principale">
+      <a href="#overview">Overview</a>
+      <a href="#risk-explorer">Customer risk</a>
+      <a href="#explainability">SHAP</a>
+      <a href="#performance">Performance</a>
+      <a href="#retention-queue">Retention queue</a>
+      <a href="#api-docs">API</a>
+    </nav>
+    <span class="live-status"><i></i> Model online</span>
+  </header>
+
+  <main class="shell">
+    <section class="hero" id="overview">
+      <div class="hero-copy">
+        <p class="eyebrow">CUSTOMER ANALYTICS / RETENTION OPERATIONS</p>
+        <h1>Know who needs<br><span>attention next.</span></h1>
+        <p class="subtitle">Une vue opérationnelle du risque de churn, des facteurs associés et des actions de fidélisation à prioriser.</p>
+        <div class="hero-actions">
+          <a class="button" href="#risk-explorer">Scorer un client</a>
+          <a class="text-link" href="#performance">Voir les performances <span>↘</span></a>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-card-top"><span class="small-label">CURRENT MODEL</span><span class="model-chip">{{ model.model_name }}</span></div>
+        <div class="hero-score">{{ '%.3f'|format(model.test_metrics.pr_auc) }}<small>PR-AUC test</small></div>
+        <div class="hero-card-bottom"><span>Calibrated probabilities</span><strong>Threshold {{ '%.2f'|format(model.threshold) }}</strong></div>
+      </div>
+    </section>
+
+    <section class="kpis" aria-label="Indicateurs principaux">
+      <article class="kpi"><span class="kpi-label">CUSTOMERS SCORED</span><strong>{{ overview.total_customers }}</strong><small>Portefeuille disponible</small></article>
+      <article class="kpi"><span class="kpi-label">OBSERVED CHURN</span><strong>{{ '%.1f'|format(overview.churn_rate * 100) }}%</strong><small>Dans le dataset de référence</small></article>
+      <article class="kpi"><span class="kpi-label">HIGH + CRITICAL</span><strong>{{ overview.high_risk_customers }}</strong><small>Clients à traiter</small></article>
+      <article class="kpi accent"><span class="kpi-label">CONTACT QUEUE</span><strong>{{ overview.recommended_contacts }}</strong><small>Selon les segments actuels</small></article>
+    </section>
+
+    <section class="section-block overview-grid">
+      <article class="panel panel-large">
+        <div class="section-heading"><div><p class="eyebrow">RETENTION QUEUE</p><h2>Priorités du moment</h2></div><a class="link" href="#retention-queue">Ouvrir la file complète ↗</a></div>
+        <div class="table-wrap">
+          <table class="data-table"><thead><tr><th>Client</th><th>Churn probability</th><th>Risk</th><th>Priority</th><th>Suggested action</th></tr></thead>
+          <tbody>{% for row in top_scores %}<tr><td><b>{{ row.customer_id }}</b><small>{{ row.Contract|default('—') }} · {{ row.InternetService|default('—') }}</small></td><td class="probability">{{ '%.1f'|format(row.churn_probability * 100) }}%</td><td><span class="pill {{ row.risk_level|lower }}">{{ row.risk_level }}</span></td><td>{{ '%.1f'|format(row.priority_score) }}</td><td class="muted-cell">{{ row.recommended_action }}</td></tr>{% endfor %}</tbody></table>
+        </div>
+      </article>
+      <article class="panel insight-panel">
+        <div class="section-heading"><div><p class="eyebrow">AT A GLANCE</p><h2>What moves risk</h2></div></div>
+        <div class="driver-list">{% for driver in drivers[:5] %}<div class="driver-row"><span>{{ driver.feature|replace('num__','')|replace('cat__','') }}</span><b>{{ '%.3f'|format(driver.mean_abs_shap) }}</b><div class="bar"><i style="width:{{ [driver.mean_abs_shap / (drivers[0].mean_abs_shap or 1) * 100, 100]|min }}%"></i></div></div>{% endfor %}</div>
+        <a href="#explainability" class="button button-light">Explorer les explications</a>
+      </article>
+    </section>
+
+    <section class="section-block" id="risk-explorer">
+      <div class="section-heading section-heading-wide"><div><p class="eyebrow">CUSTOMER RISK EXPLORER</p><h2>Analyser un client</h2><p class="section-intro">Sélectionnez un client déjà scoré ou complétez le formulaire. La réponse utilise le même pipeline que le batch scoring.</p></div><div class="section-note">POST /predict<br><b>same model · same features</b></div></div>
+      <div class="explorer-grid">
+        <form id="customer-form" class="panel form-panel">
+          <div class="form-toolbar"><label for="customer-select">Charger un client existant</label><select id="customer-select"><option value="">Choisir dans la file...</option></select></div>
+          <div class="form-grid">
+            <label>Gender<select name="gender"><option>Female</option><option>Male</option></select></label>
+            <label>Senior citizen<select name="SeniorCitizen"><option value="0">No</option><option value="1">Yes</option></select></label>
+            <label>Partner<select name="Partner"><option>Yes</option><option>No</option></select></label>
+            <label>Dependents<select name="Dependents"><option>No</option><option>Yes</option></select></label>
+            <label>Tenure <input type="number" name="tenure" value="8" min="0"></label>
+            <label>Phone service<select name="PhoneService"><option>Yes</option><option>No</option></select></label>
+            <label>Multiple lines<select name="MultipleLines"><option>No</option><option>Yes</option><option>No phone service</option></select></label>
+            <label>Internet service<select name="InternetService"><option>Fiber optic</option><option>DSL</option><option>No</option></select></label>
+            <label>Online security<select name="OnlineSecurity"><option>No</option><option>Yes</option><option>No internet service</option></select></label>
+            <label>Online backup<select name="OnlineBackup"><option>No</option><option>Yes</option><option>No internet service</option></select></label>
+            <label>Device protection<select name="DeviceProtection"><option>No</option><option>Yes</option><option>No internet service</option></select></label>
+            <label>Tech support<select name="TechSupport"><option>No</option><option>Yes</option><option>No internet service</option></select></label>
+            <label>Streaming TV<select name="StreamingTV"><option>Yes</option><option>No</option><option>No internet service</option></select></label>
+            <label>Streaming movies<select name="StreamingMovies"><option>Yes</option><option>No</option><option>No internet service</option></select></label>
+            <label>Contract<select name="Contract"><option>Month-to-month</option><option>One year</option><option>Two year</option></select></label>
+            <label>Paperless billing<select name="PaperlessBilling"><option>Yes</option><option>No</option></select></label>
+            <label>Payment method<select name="PaymentMethod"><option>Electronic check</option><option>Mailed check</option><option>Bank transfer (automatic)</option><option>Credit card (automatic)</option></select></label>
+            <label>Monthly charges<input type="number" name="MonthlyCharges" value="89.5" min="0" step="0.01"></label>
+            <label>Total charges<input type="number" name="TotalCharges" value="716" min="0" step="0.01"></label>
+          </div>
+          <button class="button" type="submit">Calculer le risque <span>→</span></button>
+          <p id="form-error" class="form-error" role="alert"></p>
+        </form>
+        <article id="prediction-card" class="panel prediction-panel empty-state"><p class="eyebrow">PREDICTION RESULT</p><div class="empty-icon">+</div><h3>Le résultat apparaîtra ici</h3><p>Complétez le formulaire pour obtenir la probabilité, les facteurs associés et la recommandation.</p></article>
+      </div>
+    </section>
+
+    <section class="section-block" id="explainability">
+      <div class="section-heading section-heading-wide"><div><p class="eyebrow">MODEL EXPLAINABILITY</p><h2>Pourquoi cette prédiction ?</h2><p class="section-intro">Les contributions SHAP montrent les variables qui poussent le score vers le haut ou vers le bas.</p></div><div class="section-note">Global + local<br><b>association, not causality</b></div></div>
+      <div class="explain-grid">
+        <article class="panel chart-panel"><div class="panel-caption"><h3>Global feature importance</h3><span>mean |SHAP value|</span></div><img class="chart-image" src="{{ url_for('result_asset', asset_path='explainability/shap_summary.png') }}" alt="Graphique SHAP global"></article>
+        <article class="panel local-panel"><div class="panel-caption"><h3>Local explanation</h3><span id="local-customer-label">Sélectionnez un client ci-dessus</span></div><div id="local-drivers" class="local-drivers"><p class="muted-cell">Lancez une prédiction pour afficher les facteurs locaux.</p></div></article>
+      </div>
+    </section>
+
+    <section class="section-block" id="performance">
+      <div class="section-heading section-heading-wide"><div><p class="eyebrow">MODEL PERFORMANCE</p><h2>Mesurer avant de décider</h2><p class="section-intro">Le modèle retenu est comparé aux baselines sur une même séparation des données.</p></div><div class="section-note">Selected<br><b>{{ model.model_name }}</b></div></div>
+      <div class="performance-grid">
+        <article class="panel"><div class="panel-caption"><h3>Benchmark</h3><span>validation set</span></div><div class="table-wrap"><table class="data-table compact"><thead><tr><th>Model</th><th>PR-AUC</th><th>Recall</th><th>F1</th><th>ROC-AUC</th></tr></thead><tbody>{% for row in benchmark %}<tr class="{% if row.model == model.model_name %}selected-row{% endif %}"><td><b>{{ row.model }}</b></td><td>{{ '%.3f'|format(row.pr_auc) }}</td><td>{{ '%.3f'|format(row.recall) }}</td><td>{{ '%.3f'|format(row.f1) }}</td><td>{{ '%.3f'|format(row.roc_auc) }}</td></tr>{% endfor %}</tbody></table></div></article>
+        <article class="panel metric-panel"><div class="panel-caption"><h3>Final test</h3><span>calibrated model</span></div><div class="metric-list"><div><span>PR-AUC</span><b>{{ '%.3f'|format(model.test_metrics.pr_auc) }}</b></div><div><span>Recall</span><b>{{ '%.3f'|format(model.test_metrics.recall) }}</b></div><div><span>F1</span><b>{{ '%.3f'|format(model.test_metrics.f1) }}</b></div><div><span>Brier score</span><b>{{ '%.3f'|format(model.test_metrics.brier_score) }}</b></div></div></article>
+      </div>
+      <div class="chart-grid"><article class="panel chart-panel"><div class="panel-caption"><h3>Probability calibration</h3><span>Brier score comparison</span></div><img class="chart-image small-chart" src="{{ url_for('result_asset', asset_path='figures/calibration_curve.png') }}" alt="Courbe de calibration"></article><article class="panel chart-panel"><div class="panel-caption"><h3>Threshold economics</h3><span>simulated net value</span></div><img class="chart-image small-chart" src="{{ url_for('result_asset', asset_path='figures/threshold_business_value.png') }}" alt="Valeur business par seuil"></article></div>
+      <article class="panel threshold-panel"><div class="panel-caption"><h3>Operating point</h3><span>selected threshold {{ '%.2f'|format(model.threshold) }}</span></div><div class="table-wrap"><table class="data-table compact"><thead><tr><th>Threshold</th><th>Contacted</th><th>Precision</th><th>Recall</th><th>Expected net value</th></tr></thead><tbody>{% for row in threshold_analysis %}<tr class="{% if row.threshold == model.threshold %}selected-row{% endif %}"><td>{{ '%.2f'|format(row.threshold) }}</td><td>{{ row.customers_contacted }}</td><td>{{ '%.3f'|format(row.precision) }}</td><td>{{ '%.3f'|format(row.recall) }}</td><td>{{ '%.0f'|format(row.expected_net_value) }}</td></tr>{% endfor %}</tbody></table></div></article>
+    </section>
+
+    <section class="section-block" id="retention-queue">
+      <div class="section-heading section-heading-wide"><div><p class="eyebrow">RETENTION QUEUE</p><h2>Une liste actionnable</h2><p class="section-intro">Filtrez les clients selon leur risque, leur contrat ou leur service internet.</p></div><a class="button button-light" href="/api/scores?limit=7043">Exporter JSON ↗</a></div>
+      <article class="panel queue-panel"><div class="filter-bar"><label>Risk<select id="risk-filter"><option value="">All risks</option><option>CRITICAL</option><option>HIGH</option><option>MEDIUM</option><option>LOW</option></select></label><label>Contract<select id="contract-filter"><option value="">All contracts</option><option>Month-to-month</option><option>One year</option><option>Two year</option></select></label><label>Internet service<select id="internet-filter"><option value="">All services</option><option>Fiber optic</option><option>DSL</option><option>No</option></select></label><span id="queue-count" class="queue-count"></span></div><div class="table-wrap"><table class="data-table" id="queue-table"><thead><tr><th>Priority</th><th>Customer</th><th>Probability</th><th>Risk</th><th>Contract</th><th>Internet</th><th>Recommended action</th></tr></thead><tbody></tbody></table></div></article>
+    </section>
+
+    <section class="section-block" id="api-docs">
+      <div class="section-heading section-heading-wide"><div><p class="eyebrow">API REFERENCE</p><h2>Connecter le scoring</h2><p class="section-intro">Les mêmes résultats sont disponibles pour une intégration externe.</p></div><span class="section-note">Flask · JSON · localhost:5000</span></div>
+      <div class="api-grid"><article class="panel endpoint-list"><div class="endpoint"><span class="method get">GET</span><code>/health</code><p>État de l’application et présence du modèle.</p></div><div class="endpoint"><span class="method get">GET</span><code>/model/info</code><p>Version, seuil, features et métriques.</p></div><div class="endpoint"><span class="method post">POST</span><code>/predict</code><p>Score individuel avec drivers SHAP.</p></div><div class="endpoint"><span class="method post">POST</span><code>/predict/batch</code><p>Score de plusieurs clients en une requête.</p></div><div class="endpoint"><span class="method get">GET</span><code>/metrics</code><p>Benchmark des modèles et métriques du test.</p></div></article><article class="panel code-panel"><div class="panel-caption"><h3>Example request</h3><span>POST /predict</span></div><pre><span class="code-muted">curl</span> http://127.0.0.1:5000/predict \
+  <span class="code-flag">-H</span> <span class="code-string">"Content-Type: application/json"</span> \
+  <span class="code-flag">-d</span> <span class="code-string">'{
+    "Contract": "Month-to-month",
+    "MonthlyCharges": 89.5,
+    "TotalCharges": 716.0
+  }'</span></pre><div id="api-result" class="api-result">La réponse contient churn_probability, risk_level, retention_priority et recommended_action.</div></article></div>
+    </section>
+
+    <footer>Customer analytics system · Les recommandations sont heuristiques et ne constituent pas une preuve causale.</footer>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
