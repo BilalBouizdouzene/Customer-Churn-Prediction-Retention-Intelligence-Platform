@@ -327,21 +327,6 @@ Docker Desktop doit être démarré avant de lancer ces commandes.
 └── pyproject.toml
 ```
 
-## 13. Pousser le projet sur GitHub
-
-Les données brutes, l’environnement virtuel et les fichiers lourds du modèle sont exclus par `.gitignore`.
-
-```powershell
-git status
-git add .
-git commit -m "Build customer churn retention platform"
-git branch -M main
-git remote add origin https://github.com/USERNAME/REPOSITORY.git
-git push -u origin main
-```
-
-Remplacez `USERNAME/REPOSITORY` par l’adresse de votre dépôt GitHub. Sur une nouvelle machine, il faudra relancer le téléchargement des données puis `scripts\run_pipeline.py`.
-
 ## 14. Limites du projet
 
 - Le dataset est historique et public ; il ne représente pas nécessairement une entreprise actuelle.
